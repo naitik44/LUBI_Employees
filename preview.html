@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lubi Electronics - New Joiner Email Template</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root {
+    --primary: #3b82f6;
+    --primary-hover: #2563eb;
+    --gradient-1: #008bd0;
+    --gradient-2: #f16f34;
+    --gradient-3: #ffcc69;
+    --bg-dark: #0f172a;
+    --panel-bg: rgba(30, 41, 59, 0.7);
+    --border-color: rgba(255, 255, 255, 0.1);
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg-dark);
+    background-image: radial-gradient(circle at 0% 0%, #1e293b 0%, #0f172a 100%);
+    color: var(--text-main);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+  }
+  button, input, select { font: inherit; }
+  
+  .app { max-width: 1600px; margin: 0 auto; padding: 32px 40px; }
+  
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 32px; padding: 20px 32px;
+    background: var(--panel-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--border-color); border-radius: 20px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  }
+  .topbar-title { display: flex; flex-direction: column; gap: 6px; }
+  .topbar h1 {
+    margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px;
+    background: linear-gradient(to right, #fff, #94a3b8);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .topbar p { margin: 0; color: var(--text-muted); font-size: 14px; }
+  
+  .actions { display: flex; gap: 12px; }
+  .btn {
+    background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color); color: var(--text-main);
+    padding: 10px 18px; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 13px; transition: all 0.2s;
+  }
+  .btn:hover { background: rgba(255, 255, 255, 0.1); transform: translateY(-1px); }
+  .btn.primary { background: linear-gradient(135deg, var(--primary), var(--primary-hover)); border: none; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
+  .btn.primary:hover { box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4); }
+  .btn.danger { color: #ef4444; border-color: rgba(239, 68, 68, 0.3); }
+  .btn.success { background: linear-gradient(135deg, #10b981, #059669); border: none; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); }
+  .btn.success:hover { box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4); transform: translateY(-2px); }
+  
+  .workspace { display: grid; grid-template-columns: 400px minmax(0, 1fr); gap: 32px; align-items: start; }
+  
+  .panel {
+    background: var(--panel-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--border-color); border-radius: 24px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  }
+  .editor { padding: 24px; position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; }
+  .editor::-webkit-scrollbar { width: 6px; }
+  .editor::-webkit-scrollbar-track { background: transparent; }
+  .editor::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+  
+  .section { padding: 0 0 24px; margin-bottom: 24px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+  .section:last-child { border-bottom: 0; margin-bottom: 0; padding-bottom: 0; }
+  .section h2 { font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; margin: 0 0 16px; color: var(--primary); font-weight: 700; }
+  
+  label { display: block; font-size: 13px; font-weight: 500; color: #cbd5e1; margin: 16px 0 8px; }
+  input[type=text], input[type=date], select {
+    width: 100%; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 12px 14px;
+    background: rgba(0, 0, 0, 0.2); color: white; font-size: 14px; transition: all 0.2s;
+  }
+  input:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); }
+  input[type=file] { padding: 10px; font-size: 13px; color: #94a3b8; border: 1px dashed rgba(255,255,255,0.2); cursor: pointer; }
+  .hint { font-size: 12px; color: #64748b; line-height: 1.5; margin-top: 8px; }
+  
+  .employee-editor { border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 20px; margin-bottom: 16px; background: rgba(255, 255, 255, 0.02); }
+  .employee-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .mini { border: 0; background: transparent; color: #ef4444; cursor: pointer; font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 6px; }
+  .mini:hover { background: rgba(239, 68, 68, 0.1); }
+  .add { width: 100%; border: 1px dashed var(--primary); color: var(--primary); background: rgba(59, 130, 246, 0.05); padding: 14px; border-radius: 12px; cursor: pointer; font-weight: 600; }
+  
+  .preview-wrap { padding: 60px 40px; background: transparent; display: flex; justify-content: center; overflow: auto; border-radius: 24px; }
+  
+  #email { width: 800px; max-width: 800px; background-color: #008bd0; background-image: linear-gradient(105deg, #ffffff 45%, transparent 45%), linear-gradient(145deg, #e0f2fe 70%, transparent 70%); border-radius: 16px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15); overflow: hidden; position: relative; }
+  .email-inner { padding: 0 48px; position: relative; z-index: 1; }
+  .email-header { padding: 32px 0 24px; display: flex; align-items: center; justify-content: space-between; }
+  .anniv { width: 120px; height: 60px; display: flex; align-items: center; justify-content: flex-start; }
+  .anniv img, .lubi-logo img { max-width: 100%; max-height: 100%; object-fit: contain; }
+  .lubi-logo { width: 160px; height: 60px; display: flex; align-items: center; justify-content: flex-end; }
+  .rule { height: 1px; background: #e2e8f0; margin-bottom: 32px; }
+  
+  .hero { text-align: center; padding-bottom: 32px; }
+  .eyebrow { display: inline-block; padding: 6px 16px; border-radius: 20px; background: #eff6ff; color: var(--primary); font-size: 12px; font-weight: 700; letter-spacing: 2px; margin-bottom: 16px; }
+  .hero h2 { margin: 0; color: #0f172a; font-size: 32px; font-weight: 800; letter-spacing: -0.5px; }
+  .hero p { margin: 12px auto 0; max-width: 560px; color: #64748b; font-size: 15px; line-height: 1.6; }
+  
+  .employees { padding: 0 0 48px; display: flex; flex-wrap: wrap; justify-content: center; gap: 24px; }
+  .employee-card { width: calc(50% - 12px); border: 1px solid #e2e8f0; border-radius: 20px; background: #ffffff; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.03); overflow: hidden; }
+  .card-accent { height: 6px; width: 100%; background: linear-gradient(90deg, var(--gradient-1), var(--gradient-2), var(--gradient-3)); }
+  .employee-body { padding: 24px; display: flex; flex-direction: column; }
+  .employee-top { display: flex; flex-direction: column; text-align: center; align-items: center; gap: 16px; }
+  .photo { width: 140px; height: 140px; flex-shrink: 0; border-radius: 50%; background: #f8fafc; border: 3px solid #ffffff; box-shadow: 0 0 0 2px #e2e8f0; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+  .photo img { width: 100%; height: 100%; object-fit: cover; }
+  .employee-name { margin: 0; font-size: 20px; font-weight: 800; color: #0f172a; }
+  .employee-role { margin: 6px 0 0; font-size: 16px; color: var(--primary); font-weight: 700; text-transform: capitalize; }
+  .employee-details { margin: 8px 0 0; color: #0f172a; font-size: 14px; }
+  
+  /* 3 Column Stats Layout */
+  .employee-bottom {
+    margin-top: 20px; background: #f8fafc; border-radius: 10px; padding: 10px 8px;
+    display: flex; justify-content: center; align-items: flex-start; text-align: center;
+  }
+  .stat-col { flex: 1; min-width: 0; padding: 0 4px; word-break: break-word; color:#64748b; font-size:14px; }
+  .stat-col strong { display: block; color: #0f172a; font-size: 12px; text-transform: uppercase; margin-bottom: 4px; }
+  .divider { width: 1px; background: #cbd5e1; align-self: stretch; }
+  
+  .footer { position: relative; padding: 32px 48px; background: #0f172a; color: #ffffff; text-align: center; }
+  .footer:before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 6px; background: linear-gradient(90deg, var(--gradient-1) 0 33%, var(--gradient-2) 33% 66%, var(--gradient-3) 66%); }
+  
+  /* Hidden Post Template for Zip Export */
+  #social-render-zone { position: fixed; top: -9999px; left: -9999px; }
+  .social-post {
+    width: 1080px; height: 1080px; background: radial-gradient(circle at top right, #f8fafc, #e2e8f0);
+    display: flex; flex-direction: column; justify-content: space-between; align-items: center;
+    padding: 80px; box-sizing: border-box; font-family: 'Inter', sans-serif;
+  }
+  .social-header { display: flex; width: 100%; justify-content: space-between; align-items: center; }
+  .social-logo img { max-height: 80px; max-width: 200px; object-fit: contain; }
+  .social-title { font-size: 48px; font-weight: 800; color: #0f172a; margin: 0; text-align: center; }
+  .social-subtitle { font-size: 24px; color: #64748b; text-align: center; margin-top: 10px; }
+  .social-card {
+    background: white; border-radius: 40px; padding: 60px; width: 100%;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 40px; border-top: 10px solid #008bd0;
+  }
+  .social-photo { width: 250px; height: 250px; border-radius: 50%; object-fit: cover; border: 8px solid #f1f5f9; background: #f1f5f9; }
+  .social-info { flex: 1; }
+  .social-name { font-size: 48px; font-weight: 800; color: #0f172a; margin: 0; }
+  .social-role { font-size: 26px; color: #3b82f6; font-weight: 700; text-transform: uppercase; margin-top: 10px; letter-spacing: 1px; }
+  .social-stats { display: flex; gap: 40px; margin-top: 40px; background: #f8fafc; padding: 30px; border-radius: 20px; }
+  .social-stat-col { display: flex; flex-direction: column; flex: 1; }
+  .social-stat-col strong { font-size: 16px; color: #0f172a; text-transform: uppercase; margin-bottom: 8px; }
+  .social-stat-col span { font-size: 22px; color: #64748b; font-weight: 500; word-break: break-word; }
+  .social-footer { width: 100%; text-align: center; font-size: 24px; font-weight: 700; background: #0f172a; color: white; padding: 30px; border-radius: 20px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="topbar-title">
+      <h1>Lubi Electronics</h1>
+      <p>New Joiner Template Builder</p>
+    </div>
+    <div class="actions">
+      <button class="btn" id="saveBtn">Save Draft</button>
+      <button class="btn danger" id="resetBtn">Reset</button>
+      <button class="btn primary" id="copyBtn">Copy HTML</button>
+      <button class="btn primary" id="downloadBtn">Download HTML</button>
+      <button class="btn primary" style="background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);" id="downloadJpgBtn">Download JPG</button>
+    </div>
+  </div>
+
+  <div class="workspace">
+    <aside class="panel editor">
+      <div class="section">
+        <h2>General Settings</h2>
+        <label>Joiner Month</label>
+        <select id="joinMonth">
+          <option value="">Select Month</option>
+          <option value="JANUARY">January</option>
+          <option value="FEBRUARY">February</option>
+          <option value="MARCH">March</option>
+          <option value="APRIL">April</option>
+          <option value="MAY">May</option>
+          <option value="JUNE">June</option>
+          <option value="JULY">July</option>
+          <option value="AUGUST">August</option>
+          <option value="SEPTEMBER">September</option>
+          <option value="OCTOBER">October</option>
+          <option value="NOVEMBER">November</option>
+          <option value="DECEMBER">December</option>
+        </select>
+      </div>
+
+      <div class="section">
+        <h2>Header & Content</h2>
+        <label>Left Brand Mark</label>
+        <input type="file" id="annivLogo" accept="image/*">
+        <label>Main Logo</label>
+        <input type="file" id="lubiLogo" accept="image/*">
+        <label>Headline</label>
+        <input type="text" id="headline" value="WELCOME TO THE TEAM">
+        <label>Introductory Text</label>
+        <input type="text" id="intro" value="New people. New perspectives. One connected team.">
+      </div>
+
+      <div class="section">
+        <h2>Footer Info</h2>
+        <label>Website URL</label>
+        <input type="text" id="website" value="www.lubielectronics.com">
+        <label>Tagline</label>
+        <input type="text" id="footerLine" value="Automation For A Connected World">
+      </div>
+
+      <div class="section">
+        <h2>Employee Roster</h2>
+        <div id="employeeEditors"></div>
+        <div style="display:flex; gap: 8px;">
+          <button class="add" id="addEmployee" style="flex:1;">+ Add Member</button>
+          <button class="add" id="importExcelBtn" style="flex:1; background: rgba(16, 185, 129, 0.05); color: #10b981; border-color: #10b981;">Import Excel</button>
+          <input type="file" id="excelUpload" accept=".xlsx, .xls, .csv" style="display:none;">
+        </div>
+      </div>
+    </aside>
+
+    <main class="preview-wrap">
+      <div id="email">
+        <div class="email-inner">
+          <div class="email-header">
+            <div class="anniv" id="previewAnniv">[ANNIV_LOGO]</div>
+            <div class="lubi-logo" id="previewLogo">[LUBI_LOGO]</div>
+          </div>
+          <div class="rule"></div>
+          <div class="hero">
+            <div class="eyebrow" id="previewEyebrow">NEW JOINER</div>
+            <h2 id="previewHeadline">WELCOME TO THE TEAM</h2>
+            <p id="previewIntro">New people. New perspectives. One connected team.</p>
+          </div>
+          <div class="employees" id="previewEmployees"></div>
+        </div>
+        <div class="footer">
+          <div class="footer-url" id="previewWebsite">www.lubielectronics.com</div>
+          <div class="footer-sub" id="previewFooterLine">Automation For A Connected World</div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div id="social-render-zone"></div>
+
+<div id="cropperModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; justify-content:center; align-items:center;">
+  <div style="background:#1e293b; padding:24px; border-radius:16px; width:500px; max-width:90%; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+    <h3 style="margin-top:0; color:white; font-size:16px; font-weight:600; margin-bottom:20px;">Crop Photo (1:1 Square)</h3>
+    <div style="width:100%; max-height:400px; background:#000;">
+      <img id="cropperImage" style="max-width:100%; display:block;">
+    </div>
+    <div style="margin-top:24px; display:flex; justify-content:flex-end; gap:12px;">
+      <button class="btn" id="cropCancelBtn">Cancel</button>
+      <button class="btn primary" id="cropSaveBtn">Save Crop</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+const state = {
+  employees: [{name:"Employee Name", role:"Designation", dept:"Department", doj:"", rm:"", exp:"", loc:"", photo:""}],
+  annivLogo: "anniv-logo.png",
+  lubiLogo: "lubi-logo.png"
+};
+
+let currentCropper = null;
+let currentCropTarget = -1;
+
+const $ = id => document.getElementById(id);
+const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, s => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[s]));
+const formatDateStr = dateString => {
+  if(!dateString) return "";
+  const d = new Date(dateString);
+  if(isNaN(d.getTime())) return dateString;
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  return d.getDate() + " " + months[d.getMonth()] + " " + d.getFullYear();
+};
+const imageToDataUrl = (file, cb) => {
+  if(!file) return cb("");
+  const r = new FileReader();
+  r.onload = e => cb(e.target.result);
+  r.readAsDataURL(file);
+};
+
+function renderEditors(){
+  const box = $("employeeEditors");
+  box.innerHTML = "";
+  state.employees.forEach((emp, i) => {
+    const el = document.createElement("div");
+    el.className = "employee-editor";
+    el.innerHTML = `
+      <div class="employee-head">
+        <strong>Member ${i+1}</strong>
+        ${state.employees.length > 1 ? `<button class="mini" data-remove="${i}">Remove</button>` : ""}
+      </div>
+      <label>Full Name</label><input type="text" data-i="${i}" data-field="name" value="${escapeHtml(emp.name)}">
+      <label>Designation</label><input type="text" data-i="${i}" data-field="role" value="${escapeHtml(emp.role)}">
+      <label>Department</label><input type="text" data-i="${i}" data-field="dept" value="${escapeHtml(emp.dept)}">
+      <label>Date of Joining</label><input type="date" data-i="${i}" data-field="doj" value="${escapeHtml(emp.doj)}">
+      <label>Reporting Manager (RM)</label><input type="text" data-i="${i}" data-field="rm" value="${escapeHtml(emp.rm)}">
+      <label>Experience</label><input type="text" data-i="${i}" data-field="exp" value="${escapeHtml(emp.exp)}">
+      <label>Location</label><input type="text" data-i="${i}" data-field="loc" value="${escapeHtml(emp.loc)}">
+      <label>Profile Photo</label><input type="file" accept="image/*" data-photo="${i}">
+    `;
+    box.appendChild(el);
+  });
+  box.querySelectorAll("input[data-field]").forEach(input=>{
+    input.addEventListener("input", e=>{ state.employees[Number(e.target.dataset.i)][e.target.dataset.field] = e.target.value; renderPreview(); });
+  });
+  
+  box.querySelectorAll("input[data-photo]").forEach(input=>{
+    input.addEventListener("change", e=>{
+      if(!e.target.files[0]) return;
+      currentCropTarget = Number(e.target.dataset.photo);
+      imageToDataUrl(e.target.files[0], data => {
+        $("cropperImage").src = data;
+        $("cropperModal").style.display = "flex";
+        if (currentCropper) currentCropper.destroy();
+        currentCropper = new Cropper($("cropperImage"), {
+          aspectRatio: 1,
+          viewMode: 1,
+        });
+        e.target.value = ""; // allow selecting same file if canceled
+      });
+    });
+  });
+  box.querySelectorAll("[data-remove]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{ state.employees.splice(Number(btn.dataset.remove),1); renderEditors(); renderPreview(); });
+  });
+}
+
+function renderPreview(){
+  const month = $("joinMonth") ? $("joinMonth").value : "";
+  const eyebrowText = month ? `NEW JOINERS - ${month}` : `NEW JOINER`;
+  if ($("previewEyebrow")) $("previewEyebrow").textContent = eyebrowText;
+  $("previewHeadline").textContent = $("headline").value || "WELCOME TO THE TEAM";
+  $("previewIntro").textContent = $("intro").value || "";
+  $("previewWebsite").textContent = $("website").value || "";
+  $("previewFooterLine").textContent = $("footerLine").value || "";
+
+  if ($("previewAnniv") && state.annivLogo) $("previewAnniv").innerHTML = `<img src="${state.annivLogo}">`;
+  if ($("previewLogo") && state.lubiLogo) $("previewLogo").innerHTML = `<img src="${state.lubiLogo}">`;
+
+  $("previewEmployees").innerHTML = state.employees.map((emp, i) => {
+    let detailsArr = [];
+    if(emp.exp) detailsArr.push(`<div class="stat-col"><strong>Exp</strong>${escapeHtml(emp.exp)}</div>`);
+    if(emp.loc) detailsArr.push(`<div class="stat-col"><strong>Location</strong>${escapeHtml(emp.loc)}</div>`);
+    
+    let infoStripHtml = "";
+    if(detailsArr.length > 0){
+      infoStripHtml = `<div class="employee-bottom">${detailsArr.join('<div class="divider"></div>')}</div>`;
+    }
+
+    return `
+      <div class="employee-card">
+        <div class="card-accent"></div>
+        <div class="employee-body">
+          <div class="employee-top">
+            <div class="photo">${emp.photo ? `<img src="${emp.photo}">` : `<label style="cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; height:100%; background:rgba(59,130,246,0.05); color:#3b82f6; font-size:13px; font-weight:600; margin:0;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>Upload<input type="file" style="display:none;" accept="image/*" class="inline-photo-upload" data-index="${i}"></label>`}</div>
+            <div class="employee-copy">
+              <h3 class="employee-name">${escapeHtml(emp.name)}</h3>
+              <div class="employee-role">${escapeHtml(emp.role)}</div>
+              <div class="employee-details">
+                ${emp.dept ? `<div><strong>Dept:</strong> ${escapeHtml(emp.dept)}</div>` : ""}
+                ${emp.doj ? `<div><strong>DOJ:</strong> ${escapeHtml(formatDateStr(emp.doj))}</div>` : ""}
+                ${emp.rm ? `<div><strong>RM:</strong> ${escapeHtml(emp.rm)}</div>` : ""}
+              </div>
+            </div>
+          </div>
+          ${infoStripHtml}
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  document.querySelectorAll(".inline-photo-upload").forEach(input => {
+    input.addEventListener("change", e => {
+      if(!e.target.files[0]) return;
+      currentCropTarget = Number(e.target.dataset.index);
+      imageToDataUrl(e.target.files[0], data => {
+        $("cropperImage").src = data;
+        $("cropperModal").style.display = "flex";
+        if (currentCropper) currentCropper.destroy();
+        currentCropper = new Cropper($("cropperImage"), { aspectRatio: 1, viewMode: 1 });
+        e.target.value = ""; 
+      });
+    });
+  });
+}
+
+function collectData(){
+  return {
+    employees: state.employees, annivLogo: state.annivLogo, lubiLogo: state.lubiLogo,
+    headline:$("headline").value, intro:$("intro").value, website:$("website").value,
+    footerLine:$("footerLine").value, joinMonth:($("joinMonth") ? $("joinMonth").value : "")
+  };
+}
+
+function saveDraft(){
+  try{
+    localStorage.setItem("lubiNewJoinerTemplate", JSON.stringify(collectData()));
+    $("saveBtn").textContent = "Saved";
+    setTimeout(()=>$("saveBtn").textContent="Save Draft",1200);
+  }catch(e){ alert("Browser error saving draft."); }
+}
+
+function loadDraft(){
+  try{
+    const raw = localStorage.getItem("lubiNewJoinerTemplate");
+    if(!raw) return;
+    const d = JSON.parse(raw);
+    Object.assign(state, {employees:d.employees||state.employees, annivLogo:d.annivLogo||"anniv-logo.png", lubiLogo:d.lubiLogo||"lubi-logo.png"});
+    $("headline").value = d.headline||""; $("intro").value = d.intro||"";
+    $("website").value = d.website||""; $("footerLine").value = d.footerLine||"";
+    if($("joinMonth")) $("joinMonth").value = d.joinMonth||"";
+  }catch(e){}
+}
+
+function buildEmailHtml(){
+  const d = collectData();
+  const employeeRows = [];
+  
+  for(let i=0;i<d.employees.length;i+=2){
+    const a=d.employees[i], b=d.employees[i+1];
+    const cardContent = emp => {
+      let detailsArr = [];
+      if(emp.exp) detailsArr.push(`<td align="center" width="50%" style="padding:0 4px;font:14px 'Arial',sans-serif;color:#64748b;vertical-align:top;word-break:break-word;"><strong style="display:block;color:#0f172a;text-transform:uppercase;font-size:12px;margin-bottom:4px;">Exp</strong>${escapeHtml(emp.exp)}</td>`);
+      if(emp.loc) detailsArr.push(`<td align="center" width="50%" style="padding:0 4px;font:14px 'Arial',sans-serif;color:#64748b;vertical-align:top;word-break:break-word;"><strong style="display:block;color:#0f172a;text-transform:uppercase;font-size:12px;margin-bottom:4px;">Location</strong>${escapeHtml(emp.loc)}</td>`);
+      
+      let infoStripHtml = "";
+      if(detailsArr.length > 0){
+        infoStripHtml = `<tr><td align="center" style="padding-top:20px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f8fafc;border-radius:10px;"><tr><td style="padding:12px 8px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>${detailsArr.join('<td width="1" style="background:#cbd5e1;font-size:0;line-height:0;">&nbsp;</td>')}</tr></table></td></tr></table></td></tr>`;
+      }
+      return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #e2e8f0;border-radius:20px;background:#ffffff;overflow:hidden;"><tr><td style="height:6px;font-size:0;line-height:0;background:linear-gradient(90deg, #008bd0, #f16f34, #ffcc69);">&nbsp;</td></tr><tr><td style="padding:24px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td align="center" valign="middle" style="padding-bottom:16px;">${emp.photo ? `<img src="${emp.photo}" width="140" height="140" style="display:inline-block;width:140px;height:140px;object-fit:cover;border-radius:50%;border:3px solid #ffffff;" alt="">` : `<div style="margin:0 auto;width:140px;height:140px;border-radius:50%;background:#f8fafc;border:2px solid #e2e8f0;text-align:center;line-height:140px;font:600 12px 'Arial',sans-serif;color:#94a3b8;">PHOTO</div>`}</td></tr><tr><td align="center" valign="middle"><div style="font:800 20px/1.2 'Arial',sans-serif;color:#0f172a;">${escapeHtml(emp.name)}</div><div style="margin-top:6px;font:700 16px/1.4 'Arial',sans-serif;color:#3b82f6;text-transform:capitalize;">${escapeHtml(emp.role)}</div><div style="margin-top:8px;font:14px/1.5 'Arial',sans-serif;color:#0f172a;">${emp.dept ? `<div><strong style="color:#0f172a;">Dept:</strong> ${escapeHtml(emp.dept)}</div>` : ""}${emp.doj ? `<div><strong style="color:#0f172a;">DOJ:</strong> ${escapeHtml(formatDateStr(emp.doj))}</div>` : ""}${emp.rm ? `<div><strong style="color:#0f172a;">RM:</strong> ${escapeHtml(emp.rm)}</div>` : ""}</div></td></tr>${infoStripHtml}</table></td></tr></table>`;
+    };
+
+    if (!b) {
+      employeeRows.push(`<tr><td colspan="2" align="center" style="padding:12px;"><table role="presentation" width="340" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;"><tr><td width="100%">${cardContent(a)}</td></tr></table></td></tr>`);
+    } else {
+      employeeRows.push(`<tr><td width="50%" valign="top" style="padding:12px;">${cardContent(a)}</td><td width="50%" valign="top" style="padding:12px;">${cardContent(b)}</td></tr>`);
+    }
+  }
+
+  const eyebrowText = d.joinMonth ? `NEW JOINERS - ${d.joinMonth}` : `NEW JOINER`;
+  const annivOutput = d.annivLogo ? `<img src="${d.annivLogo}" width="120" style="display:block;max-width:120px;max-height:60px;" alt="">` : `[ANNIV_LOGO]`;
+  const lubiOutput = d.lubiLogo ? `<img src="${d.lubiLogo}" width="160" style="display:block;max-width:160px;max-height:60px;" alt="Lubi">` : `[LUBI_LOGO]`;
+
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Lubi Electronics - New Joiner</title></head><body style="margin:0;padding:0;background-color:#f8fafc;"><center><table role="presentation" width="800" cellpadding="0" cellspacing="0" border="0" style="width:800px;max-width:800px;background-color:#008bd0;background-image:linear-gradient(105deg, #ffffff 45%, transparent 45%), linear-gradient(145deg, #e0f2fe 70%, transparent 70%);border-radius:16px;margin:20px auto;overflow:hidden;"><tr><td style="padding:32px 48px 24px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td width="50%" valign="middle">${annivOutput}</td><td width="50%" align="right" valign="middle">${lubiOutput}</td></tr></table></td></tr><tr><td style="height:1px;background:#e2e8f0;font-size:1px;line-height:1px;">&nbsp;</td></tr><tr><td align="center" style="padding:32px 48px 22px;"><div style="display:inline-block;padding:6px 16px;border-radius:20px;background:#eff6ff;color:#3b82f6;font:700 12px 'Arial',sans-serif;letter-spacing:2px;">${escapeHtml(eyebrowText)}</div><div style="margin-top:16px;font:800 32px/1.2 'Arial',sans-serif;color:#0f172a;letter-spacing:-0.5px;">${escapeHtml(d.headline || "WELCOME TO THE TEAM")}</div><div style="margin:12px auto 0;font:15px/1.6 'Arial',sans-serif;color:#64748b;">${escapeHtml(d.intro || "")}</div></td></tr><tr><td style="padding:8px 36px 48px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">${employeeRows.join("")}</table></td></tr><tr><td align="center" style="padding:32px 48px;background:#0f172a;border-top:6px solid #008bd0;"><div style="font:700 14px 'Arial',sans-serif;color:#ffffff;letter-spacing:1px;">${escapeHtml(d.website)}</div><div style="margin-top:8px;font:12px 'Arial',sans-serif;color:#94a3b8;">${escapeHtml(d.footerLine)}</div></td></tr></table></center></body></html>`;
+}
+
+$("addEmployee").addEventListener("click",()=>{
+  state.employees.push({name:"Employee Name",role:"Designation",dept:"Department",doj:"",rm:"",exp:"",loc:"",photo:""});
+  renderEditors(); renderPreview();
+});
+
+$("importExcelBtn").addEventListener("click", () => $("excelUpload").click());
+$("excelUpload").addEventListener("change", async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (evt) => {
+    try {
+      const data = new Uint8Array(evt.target.result);
+      const workbook = XLSX.read(data, {type: 'array'});
+      const firstSheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[firstSheetName];
+      const json = XLSX.utils.sheet_to_json(worksheet, {defval: "", raw: false});
+      
+      json.forEach(row => {
+        const getVal = (...keys) => {
+          for (const key of keys) {
+            const found = Object.keys(row).find(k => k.toLowerCase().trim() === key.toLowerCase().trim());
+            if (found) return row[found];
+          }
+          return "";
+        };
+        
+        const name = getVal("name", "employee name", "emp name");
+        if (name) {
+          state.employees.push({
+            name: name,
+            role: getVal("designation", "role", "title", "job title", "position"),
+            dept: getVal("department", "dept"),
+            doj: getVal("doj", "date of joining", "joining date", "join date"),
+            rm: getVal("rm", "reporting manager", "manager", "reports to"),
+            exp: getVal("exp", "experience", "total experience", "work experience"),
+            loc: getVal("location", "loc", "base", "city", "base location"),
+            photo: ""
+          });
+        }
+      });
+      renderEditors();
+      renderPreview();
+    } catch (err) {
+      alert("Error reading Excel file: " + err.message);
+    }
+    $("excelUpload").value = "";
+  };
+  reader.readAsArrayBuffer(file);
+});
+
+["headline","intro","website","footerLine","joinMonth"].forEach(id=>{
+  $(id).addEventListener("input",renderPreview);
+});
+
+$("annivLogo").addEventListener("change", (e) => {
+  if (e.target.files[0]) imageToDataUrl(e.target.files[0], data => { state.annivLogo = data; renderPreview(); });
+});
+
+$("lubiLogo").addEventListener("change", (e) => {
+  if (e.target.files[0]) imageToDataUrl(e.target.files[0], data => { state.lubiLogo = data; renderPreview(); });
+});
+
+$("saveBtn").addEventListener("click",saveDraft);
+
+$("resetBtn").addEventListener("click",()=>{
+  if(!confirm("Reset the template and remove all saved draft data?")) return;
+  localStorage.removeItem("lubiNewJoinerTemplate");
+  location.reload();
+});
+
+$("copyBtn").addEventListener("click",async()=>{
+  try{
+    await navigator.clipboard.writeText(buildEmailHtml());
+    $("copyBtn").textContent="Copied";
+    setTimeout(()=>{$("copyBtn").textContent="Copy HTML";},1500);
+  }catch(e){
+    const ta=document.createElement("textarea");
+    ta.value=buildEmailHtml(); document.body.appendChild(ta); ta.select();
+    document.execCommand("copy"); ta.remove();
+    $("copyBtn").textContent="Copied";
+    setTimeout(()=>{$("copyBtn").textContent="Copy HTML";},1500);
+  }
+});
+
+$("downloadBtn").addEventListener("click",()=>{
+  const blob=new Blob([buildEmailHtml()],{type:"text/html;charset=utf-8"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="lubi-new-joiner-email.html";
+  document.body.appendChild(a);a.click();a.remove();
+});
+
+// Zipped Social JPGs Export Logic
+$("downloadJpgBtn").addEventListener("click", async () => {
+  const btn = $("downloadJpgBtn");
+  const originalText = btn.textContent;
+  btn.textContent = "Generating...";
+
+  const emailNode = $("email");
+  const employeesNode = $("previewEmployees");
+  
+  // Calculate columns based on employee count to prevent huge height
+  let cols = 2;
+  let newWidth = 800;
+  if (state.employees.length >= 5) {
+    cols = 3;
+    newWidth = 1200;
+  }
+  
+  // Temporarily adjust layout
+  const originalWidth = emailNode.style.width;
+  const originalMaxWidth = emailNode.style.maxWidth;
+  const cards = Array.from(employeesNode.querySelectorAll(".employee-card"));
+  
+  emailNode.style.width = newWidth + "px";
+  emailNode.style.maxWidth = newWidth + "px";
+  if (cols === 3) {
+    cards.forEach(c => { c.style.width = "calc(33.333% - 16px)"; });
+  }
+  
+  try {
+    const canvas = await html2canvas(emailNode, { scale: 1.5, useCORS: true, backgroundColor: null });
+    const a = document.createElement("a");
+    a.href = canvas.toDataURL("image/jpeg", 0.9);
+    a.download = "lubi-new-joiners.jpg";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  } catch(e) {
+    alert("Could not generate JPG. Details: " + e.message);
+  }
+  
+  // Restore layout
+  emailNode.style.width = originalWidth;
+  emailNode.style.maxWidth = originalMaxWidth;
+  cards.forEach(c => { c.style.width = ""; });
+
+  btn.textContent = originalText;
+});
+
+$("cropCancelBtn").addEventListener("click", () => {
+  $("cropperModal").style.display = "none";
+  if (currentCropper) { currentCropper.destroy(); currentCropper = null; }
+});
+
+$("cropSaveBtn").addEventListener("click", () => {
+  if (!currentCropper) return;
+  const canvas = currentCropper.getCroppedCanvas({ width: 250, height: 250 });
+  state.employees[currentCropTarget].photo = canvas.toDataURL("image/jpeg", 0.9);
+  
+  $("cropperModal").style.display = "none";
+  currentCropper.destroy();
+  currentCropper = null;
+  
+  renderPreview();
+  renderEditors();
+});
+
+loadDraft();
+renderEditors();
+renderPreview();
+</script>
+</body>
+</html>
