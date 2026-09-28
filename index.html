@@ -9,6 +9,10 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   :root {
+    --bg-grad-1: #1e293b;
+    --bg-grad-2: #0f172a;
+    --input-bg: rgba(0, 0, 0, 0.2);
+    --input-color: white;
     --primary: #3b82f6;
     --primary-hover: #2563eb;
     --gradient-1: #008bd0;
@@ -20,11 +24,23 @@
     --text-main: #f8fafc;
     --text-muted: #94a3b8;
   }
+  .theme-light {
+    --bg-dark: #f1f5f9;
+    --panel-bg: rgba(255, 255, 255, 0.9);
+    --border-color: rgba(0, 0, 0, 0.1);
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --bg-grad-1: #ffffff;
+    --bg-grad-2: #e2e8f0;
+    --input-bg: #ffffff;
+    --input-color: #0f172a;
+  }
   * { box-sizing: border-box; }
   body {
     margin: 0;
     background: var(--bg-dark);
-    background-image: radial-gradient(circle at 0% 0%, #1e293b 0%, #0f172a 100%);
+    background-image: radial-gradient(circle at 0% 0%, var(--bg-grad-1) 0%, var(--bg-grad-2) 100%);
+    transition: background 0.3s ease, color 0.3s ease;
     color: var(--text-main);
     font-family: 'Inter', sans-serif;
     min-height: 100vh;
@@ -78,10 +94,10 @@
   label { display: block; font-size: 13px; font-weight: 500; color: #cbd5e1; margin: 16px 0 8px; }
   input[type=text], input[type=date], select {
     width: 100%; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 12px 14px;
-    background: rgba(0, 0, 0, 0.2); color: white; font-size: 14px; transition: all 0.2s;
+    background: var(--input-bg); color: var(--input-color); font-size: 14px; transition: all 0.2s;
   }
   input:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); }
-  input[type=file] { padding: 10px; font-size: 13px; color: #94a3b8; border: 1px dashed rgba(255,255,255,0.2); cursor: pointer; }
+  input[type=file] { padding: 10px; font-size: 13px; color: #94a3b8; border: 1px dashed var(--border-color); color: var(--text-muted); cursor: pointer; }
   .hint { font-size: 12px; color: #64748b; line-height: 1.5; margin-top: 8px; }
   
   .employee-editor { border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 20px; margin-bottom: 16px; background: rgba(255, 255, 255, 0.02); }
@@ -152,16 +168,60 @@
   .social-stat-col strong { font-size: 16px; color: #0f172a; text-transform: uppercase; margin-bottom: 8px; }
   .social-stat-col span { font-size: 22px; color: #64748b; font-weight: 500; word-break: break-word; }
   .social-footer { width: 100%; text-align: center; font-size: 24px; font-weight: 700; background: #0f172a; color: white; padding: 30px; border-radius: 20px; }
+
+  .employee-editor { transition: transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease; }
+  .employee-editor.dragging { opacity: 0.4; transform: scale(0.98); box-shadow: 0 0 20px rgba(59,130,246,0.2); border-color: var(--primary); }
+  .employee-editor.drag-over { border-top: 3px dashed var(--primary); }
+  @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .employee-editor { animation: slideIn 0.3s ease; }
+
+  #reorderList li {
+    padding: 12px 16px;
+    background: var(--input-bg);
+    color: var(--input-color);
+    border-radius: 10px;
+    cursor: grab;
+    border: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    transition: all 0.2s;
+  }
+  #reorderList li:hover { background: rgba(59,130,246,0.1); }
+  #reorderList li.dragging { opacity: 0.5; border-color: var(--primary); transform: scale(0.98); }
+
+  #reorderList li {
+    padding: 12px 16px;
+    background: var(--input-bg);
+    color: var(--input-color);
+    border-radius: 10px;
+    cursor: grab;
+    border: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    transition: all 0.2s;
+  }
+  #reorderList li:hover { background: rgba(59,130,246,0.1); }
+  #reorderList li.dragging { opacity: 0.5; border-color: var(--primary); transform: scale(0.98); }
+  
+  .employee-editor.collapsed .employee-body-editor { display: none; }
+  .employee-editor.collapsed .employee-head .toggle-btn { transform: rotate(-90deg); }
+  .employee-head { cursor: pointer; display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; margin-bottom: 12px; border-bottom: 1px solid var(--border-color); }
+  .employee-editor.collapsed .employee-head { padding-bottom: 0; margin-bottom: 0; border-bottom: none; }
 </style>
 </head>
 <body>
 <div class="app">
   <div class="topbar">
     <div class="topbar-title">
-      <h1>Lubi Electronics</h1>
+      <img src="lubi-logo.png" alt="Lubi Electronics" style="height: 32px; object-fit: contain; margin-bottom: 4px;">
       <p>New Joiner Template Builder</p>
     </div>
     <div class="actions">
+      <button class="btn" id="themeToggleBtn">☀️ Light Mode</button>
       <button class="btn" id="saveBtn">Save Draft</button>
       <button class="btn danger" id="resetBtn">Reset</button>
       <button class="btn primary" id="copyBtn">Copy HTML</button>
@@ -217,6 +277,9 @@
         <div id="employeeEditors"></div>
         <div style="display:flex; gap: 8px;">
           <button class="add" id="addEmployee" style="flex:1;">+ Add Member</button>
+          <button class="add" id="reorderBtn" style="flex:1; border-style: solid; background: rgba(255,255,255,0.05); color: var(--text-main); border-color: var(--border-color);">⇅ Reorder</button>
+        </div>
+        <div style="display:flex; gap: 8px; margin-top: 8px;">
           <button class="add" id="importExcelBtn" style="flex:1; background: rgba(16, 185, 129, 0.05); color: #10b981; border-color: #10b981;">Import Excel</button>
           <input type="file" id="excelUpload" accept=".xlsx, .xls, .csv" style="display:none;">
         </div>
@@ -256,8 +319,24 @@
       <img id="cropperImage" style="max-width:100%; display:block;">
     </div>
     <div style="margin-top:24px; display:flex; justify-content:flex-end; gap:12px;">
-      <button class="btn" id="cropCancelBtn">Cancel</button>
+      <button class="btn" id="cropZoomIn">+ Zoom</button>
+        <button class="btn" id="cropZoomOut">- Zoom</button>
+        <button class="btn" id="cropRotate">Rotate</button>
+        <div style="flex:1"></div>
+        <button class="btn" id="cropCancelBtn">Cancel</button>
       <button class="btn primary" id="cropSaveBtn">Save Crop</button>
+    </div>
+  </div>
+</div>
+
+<div id="reorderModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; justify-content:center; align-items:center;">
+  <div style="background:var(--panel-bg); padding:24px; border-radius:16px; width:400px; max-width:90%; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid var(--border-color);">
+    <h3 style="margin-top:0; color:var(--text-main); font-size:18px; font-weight:700; margin-bottom:20px;">Reorder Employees</h3>
+    <ul id="reorderList" style="list-style:none; padding:0; margin:0; max-height:60vh; overflow-y:auto; gap:8px; display:flex; flex-direction:column;">
+    </ul>
+    <div style="margin-top:24px; display:flex; justify-content:flex-end; gap:12px;">
+      <button class="btn" id="reorderCancelBtn">Cancel</button>
+      <button class="btn primary" id="reorderSaveBtn">Save Order</button>
     </div>
   </div>
 </div>
@@ -298,19 +377,26 @@ function renderEditors(){
     const el = document.createElement("div");
     el.className = "employee-editor";
     el.innerHTML = `
-      <div class="employee-head">
-        <strong>Member ${i+1}</strong>
-        ${state.employees.length > 1 ? `<button class="mini" data-remove="${i}">Remove</button>` : ""}
+      <div class="employee-head" onclick="this.parentElement.classList.toggle('collapsed')">
+        <strong style="font-size: 15px; color: var(--text-main);">${escapeHtml(emp.name) || 'Member ' + (i+1)}</strong>
+        <div style="display:flex; gap: 8px; align-items: center;">
+          <button class="mini toggle-btn" style="padding: 4px; border:none; background:transparent; font-size:12px; transition: transform 0.2s;" onclick="event.preventDefault()">▼</button>
+          ${state.employees.length > 1 ? `<button class="mini" data-remove="${i}" onclick="event.stopPropagation()">Remove</button>` : ""}
+        </div>
       </div>
-      <label>Full Name</label><input type="text" data-i="${i}" data-field="name" value="${escapeHtml(emp.name)}">
-      <label>Designation</label><input type="text" data-i="${i}" data-field="role" value="${escapeHtml(emp.role)}">
-      <label>Department</label><input type="text" data-i="${i}" data-field="dept" value="${escapeHtml(emp.dept)}">
-      <label>Date of Joining</label><input type="date" data-i="${i}" data-field="doj" value="${escapeHtml(emp.doj)}">
-      <label>Reporting Manager (RM)</label><input type="text" data-i="${i}" data-field="rm" value="${escapeHtml(emp.rm)}">
-      <label>Experience</label><input type="text" data-i="${i}" data-field="exp" value="${escapeHtml(emp.exp)}">
-      <label>Location</label><input type="text" data-i="${i}" data-field="loc" value="${escapeHtml(emp.loc)}">
-      <label>Profile Photo</label><input type="file" accept="image/*" data-photo="${i}">
+      <div class="employee-body-editor">
+        <label>Full Name</label><input type="text" data-i="${i}" data-field="name" value="${escapeHtml(emp.name)}">
+        <label>Designation</label><input type="text" data-i="${i}" data-field="role" value="${escapeHtml(emp.role)}">
+        <label>Department</label><input type="text" data-i="${i}" data-field="dept" value="${escapeHtml(emp.dept)}">
+        <label>Date of Joining</label><input type="date" data-i="${i}" data-field="doj" value="${escapeHtml(emp.doj)}">
+        <label>Reporting Manager (RM)</label><input type="text" data-i="${i}" data-field="rm" value="${escapeHtml(emp.rm)}">
+        <label>Experience</label><input type="text" data-i="${i}" data-field="exp" value="${escapeHtml(emp.exp)}">
+        <label>Location</label><input type="text" data-i="${i}" data-field="loc" value="${escapeHtml(emp.loc)}">
+        <label>Profile Photo</label><input type="file" accept="image/*" data-photo="${i}">
+      </div>
     `;
+    // Auto-collapse if not the first employee, to keep it clean
+    if(i > 0) el.classList.add('collapsed');
     box.appendChild(el);
   });
   box.querySelectorAll("input[data-field]").forEach(input=>{
@@ -454,7 +540,20 @@ function buildEmailHtml(){
   const annivOutput = d.annivLogo ? `<img src="${d.annivLogo}" width="120" style="display:block;max-width:120px;max-height:60px;" alt="">` : `[ANNIV_LOGO]`;
   const lubiOutput = d.lubiLogo ? `<img src="${d.lubiLogo}" width="160" style="display:block;max-width:160px;max-height:60px;" alt="Lubi">` : `[LUBI_LOGO]`;
 
-  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Lubi Electronics - New Joiner</title></head><body style="margin:0;padding:0;background-color:#f8fafc;"><center><table role="presentation" width="800" cellpadding="0" cellspacing="0" border="0" style="width:800px;max-width:800px;background-color:transparent;border-radius:16px;margin:20px auto;overflow:hidden;"><tr><td><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#008bd0;background-image:linear-gradient(105deg, #ffffff 45%, transparent 45%), linear-gradient(145deg, #e0f2fe 70%, transparent 70%);border:6px solid #008bd0;border-bottom:none;border-radius:16px 16px 0 0;"><tr><td style="padding:32px 42px 24px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td width="50%" valign="middle">${annivOutput}</td><td width="50%" align="right" valign="middle">${lubiOutput}</td></tr></table></td></tr><tr><td style="height:1px;background:#e2e8f0;font-size:1px;line-height:1px;">&nbsp;</td></tr><tr><td align="center" style="padding:32px 42px 22px;"><div style="display:inline-block;padding:6px 16px;border-radius:20px;background:#eff6ff;color:#3b82f6;font:700 12px 'Arial',sans-serif;letter-spacing:2px;">${escapeHtml(eyebrowText)}</div><div style="margin-top:16px;font:800 32px/1.2 'Arial',sans-serif;color:#0f172a;letter-spacing:-0.5px;">${escapeHtml(d.headline || "WELCOME TO THE TEAM")}</div><div style="margin:12px auto 0;font:15px/1.6 'Arial',sans-serif;color:#64748b;">${escapeHtml(d.intro || "")}</div></td></tr><tr><td style="padding:8px 30px 48px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">${employeeRows.join("")}</table></td></tr></table></td></tr><tr><td><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td align="center" style="padding:32px 48px;background:#0f172a;border-top:6px solid #008bd0;border-radius:0 0 16px 16px;"><div style="font:700 14px 'Arial',sans-serif;color:#ffffff;letter-spacing:1px;">${escapeHtml(d.website)}</div><div style="margin-top:8px;font:12px 'Arial',sans-serif;color:#94a3b8;">${escapeHtml(d.footerLine)}</div></td></tr></table></td></tr></table></center></body></html>`;
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Lubi Electronics - New Joiner</title></head><body style="margin:0;padding:0;background-color:#f8fafc;"><center><table role="presentation" width="800" cellpadding="0" cellspacing="0" border="0" style="width:800px;max-width:800px;background-color:transparent;border-radius:16px;margin:20px auto;overflow:hidden;"><tr><td><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#008bd0;background-image:linear-gradient(105deg, #ffffff 45%, transparent 45%), linear-gradient(145deg, #e0f2fe 70%, transparent 70%);border:6px solid #008bd0;border-bottom:none;border-radius:16px 16px 0 0;"><tr><td style="padding:32px 42px 24px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td width="50%" valign="middle">${annivOutput}</td><td width="50%" align="right" valign="middle">${lubiOutput}</td></tr></table></td></tr><tr><td style="height:1px;background:#e2e8f0;font-size:1px;line-height:1px;">&nbsp;</td></tr><tr><td align="center" style="padding:32px 42px 22px;"><div style="display:inline-block;padding:6px 16px;border-radius:20px;background:#eff6ff;color:#3b82f6;font:700 12px 'Arial',sans-serif;letter-spacing:2px;">${escapeHtml(eyebrowText)}</div><div style="margin-top:16px;font:800 32px/1.2 'Arial',sans-serif;color:#0f172a;letter-spacing:-0.5px;">${escapeHtml(d.headline || "WELCOME TO THE TEAM")}</div><div style="margin:12px auto 0;font:15px/1.6 'Arial',sans-serif;color:#64748b;">${escapeHtml(d.intro || "")}</div></td></tr><tr><td style="padding:8px 30px 48px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">${employeeRows.join("")}</table></td></tr></table></td></tr><tr><td><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td align="center" style="padding:32px 48px;background:#0f172a;border-top:6px solid #008bd0;border-radius:0 0 16px 16px;"><div style="font:700 14px 'Arial',sans-serif;color:#ffffff;letter-spacing:1px;">${escapeHtml(d.website)}</div><div style="margin-top:8px;font:12px 'Arial',sans-serif;color:#94a3b8;">${escapeHtml(d.footerLine)}</div></td></tr></table></td></tr></table></center>
+<div id="reorderModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; justify-content:center; align-items:center;">
+  <div style="background:var(--panel-bg); padding:24px; border-radius:16px; width:400px; max-width:90%; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid var(--border-color);">
+    <h3 style="margin-top:0; color:var(--text-main); font-size:18px; font-weight:700; margin-bottom:20px;">Reorder Employees</h3>
+    <ul id="reorderList" style="list-style:none; padding:0; margin:0; max-height:60vh; overflow-y:auto; gap:8px; display:flex; flex-direction:column;">
+    </ul>
+    <div style="margin-top:24px; display:flex; justify-content:flex-end; gap:12px;">
+      <button class="btn" id="reorderCancelBtn">Cancel</button>
+      <button class="btn primary" id="reorderSaveBtn">Save Order</button>
+    </div>
+  </div>
+</div>
+
+</body></html>`;
 }
 
 $("addEmployee").addEventListener("click",()=>{
@@ -614,6 +713,80 @@ $("cropSaveBtn").addEventListener("click", () => {
   
   renderPreview();
   renderEditors();
+});
+
+
+$("themeToggleBtn").addEventListener("click", () => {
+  document.body.classList.toggle("theme-light");
+  const isLight = document.body.classList.contains("theme-light");
+  localStorage.setItem("lubiTheme", isLight ? "light" : "dark");
+  $("themeToggleBtn").textContent = isLight ? "🌙 Dark Mode" : "☀️ Light Mode";
+});
+if(localStorage.getItem("lubiTheme") === "light") {
+  document.body.classList.add("theme-light");
+  $("themeToggleBtn").textContent = "🌙 Dark Mode";
+}
+
+
+$("cropZoomIn").addEventListener("click", () => { if(currentCropper) currentCropper.zoom(0.1); });
+$("cropZoomOut").addEventListener("click", () => { if(currentCropper) currentCropper.zoom(-0.1); });
+$("cropRotate").addEventListener("click", () => { if(currentCropper) currentCropper.rotate(45); });
+
+
+let tempOrder = [];
+let reorderDragStartIndex = null;
+
+$("reorderBtn").addEventListener("click", () => {
+  tempOrder = [...state.employees];
+  renderReorderList();
+  $("reorderModal").style.display = "flex";
+});
+
+function renderReorderList() {
+  const list = $("reorderList");
+  list.innerHTML = "";
+  tempOrder.forEach((emp, i) => {
+    const li = document.createElement("li");
+    li.draggable = true;
+    li.innerHTML = `<span style="color:var(--text-muted); cursor:grab;">☰</span> <strong>${escapeHtml(emp.name || 'Unnamed')}</strong> <span style="color:var(--text-muted); font-size:12px;">${escapeHtml(emp.role)}</span>`;
+    
+    li.addEventListener("dragstart", function(e) {
+      reorderDragStartIndex = i;
+      this.classList.add("dragging");
+    });
+    li.addEventListener("dragover", function(e) {
+      e.preventDefault();
+      this.style.borderTop = "3px solid var(--primary)";
+    });
+    li.addEventListener("dragleave", function(e) {
+      this.style.borderTop = "1px solid var(--border-color)";
+    });
+    li.addEventListener("drop", function(e) {
+      e.preventDefault();
+      this.style.borderTop = "1px solid var(--border-color)";
+      if (reorderDragStartIndex !== null && reorderDragStartIndex !== i) {
+        const item = tempOrder.splice(reorderDragStartIndex, 1)[0];
+        tempOrder.splice(i, 0, item);
+        renderReorderList();
+      }
+    });
+    li.addEventListener("dragend", function(e) {
+      this.classList.remove("dragging");
+    });
+    
+    list.appendChild(li);
+  });
+}
+
+$("reorderCancelBtn").addEventListener("click", () => {
+  $("reorderModal").style.display = "none";
+});
+
+$("reorderSaveBtn").addEventListener("click", () => {
+  state.employees = [...tempOrder];
+  renderEditors();
+  renderPreview();
+  $("reorderModal").style.display = "none";
 });
 
 loadDraft();
