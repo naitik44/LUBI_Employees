@@ -126,7 +126,8 @@
   .card-accent { height: 6px; width: 100%; background: linear-gradient(90deg, var(--gradient-1), var(--gradient-2), var(--gradient-3)); }
   .employee-body { padding: 24px; display: flex; flex-direction: column; }
   .employee-top { display: flex; flex-direction: column; text-align: center; align-items: center; gap: 16px; }
-  .photo { width: 140px; height: 140px; flex-shrink: 0; border-radius: 50%; background: #f8fafc; border: 3px solid #ffffff; box-shadow: 0 0 0 2px #e2e8f0; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+  .photo { position: relative; width: 140px; height: 140px; flex-shrink: 0; border-radius: 50%; background: #f8fafc; border: 3px solid #ffffff; box-shadow: 0 0 0 2px #e2e8f0; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+  .photo:hover .edit-crop-overlay { opacity: 1 !important; }
   .photo img { width: 100%; height: 100%; object-fit: cover; }
   .employee-name { margin: 0; font-size: 20px; font-weight: 800; color: #0f172a; }
   .employee-role { margin: 6px 0 0; font-size: 16px; color: var(--primary); font-weight: 700; text-transform: capitalize; }
@@ -280,7 +281,9 @@
           <button class="add" id="reorderBtn" style="flex:1; border-style: solid; background: rgba(255,255,255,0.05); color: var(--text-main); border-color: var(--border-color);">⇅ Reorder</button>
         </div>
         <div style="display:flex; gap: 8px; margin-top: 8px;">
-          <button class="add" id="importExcelBtn" style="flex:1; background: rgba(16, 185, 129, 0.05); color: #10b981; border-color: #10b981;">Import Excel</button>
+          <button class="add" id="imageFolderBtn" style="flex:1; background: rgba(59, 130, 246, 0.05); color: #3b82f6; border-color: #3b82f6;">1. Select Photos Folder</button>
+          <input type="file" id="imageFolderUpload" webkitdirectory directory multiple accept="image/*" style="display:none;">
+          <button class="add" id="importExcelBtn" style="flex:1; background: rgba(16, 185, 129, 0.05); color: #10b981; border-color: #10b981;">2. Import Excel</button>
           <input type="file" id="excelUpload" accept=".xlsx, .xls, .csv" style="display:none;">
         </div>
       </div>
@@ -392,7 +395,11 @@ function renderEditors(){
         <label>Reporting Manager (RM)</label><input type="text" data-i="${i}" data-field="rm" value="${escapeHtml(emp.rm)}">
         <label>Experience</label><input type="text" data-i="${i}" data-field="exp" value="${escapeHtml(emp.exp)}">
         <label>Location</label><input type="text" data-i="${i}" data-field="loc" value="${escapeHtml(emp.loc)}">
-        <label>Profile Photo</label><input type="file" accept="image/*" data-photo="${i}">
+        <label>Profile Photo</label>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <input type="file" accept="image/*" data-photo="${i}">
+          ${emp.originalPhoto ? `<button class="mini" data-crop-edit="${i}" onclick="event.preventDefault()">Edit Crop</button>` : ""}
+        </div>
       </div>
     `;
     // Auto-collapse if not the first employee, to keep it clean
@@ -403,11 +410,24 @@ function renderEditors(){
     input.addEventListener("input", e=>{ state.employees[Number(e.target.dataset.i)][e.target.dataset.field] = e.target.value; renderPreview(); });
   });
   
+  box.querySelectorAll("button[data-crop-edit]").forEach(btn=>{
+    btn.addEventListener("click", e=>{
+      const idx = Number(e.target.dataset.cropEdit);
+      currentCropTarget = idx;
+      $("cropperImage").src = state.employees[idx].originalPhoto;
+      $("cropperModal").style.display = "flex";
+      if (currentCropper) currentCropper.destroy();
+      currentCropper = new Cropper($("cropperImage"), { aspectRatio: 1, viewMode: 1 });
+    });
+  });
+
   box.querySelectorAll("input[data-photo]").forEach(input=>{
     input.addEventListener("change", e=>{
       if(!e.target.files[0]) return;
-      currentCropTarget = Number(e.target.dataset.photo);
+      const targetIdx = Number(e.target.dataset.photo);
+      currentCropTarget = targetIdx;
       imageToDataUrl(e.target.files[0], data => {
+        state.employees[targetIdx].originalPhoto = data;
         $("cropperImage").src = data;
         $("cropperModal").style.display = "flex";
         if (currentCropper) currentCropper.destroy();
@@ -451,7 +471,7 @@ function renderPreview(){
         <div class="card-accent"></div>
         <div class="employee-body">
           <div class="employee-top">
-            <div class="photo">${emp.photo ? `<img src="${emp.photo}">` : `<label style="cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; height:100%; background:rgba(59,130,246,0.05); color:#3b82f6; font-size:13px; font-weight:600; margin:0;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>Upload<input type="file" style="display:none;" accept="image/*" class="inline-photo-upload" data-index="${i}"></label>`}</div>
+            <div class="photo">${emp.photo ? `<img src="${emp.photo}"><div class="edit-crop-overlay" data-index="${i}" style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); color:white; display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.2s; cursor:pointer; font-size:14px; font-weight:600;">Edit Crop</div>` : `<label style="cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; height:100%; background:rgba(59,130,246,0.05); color:#3b82f6; font-size:13px; font-weight:600; margin:0;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>Upload<input type="file" style="display:none;" accept="image/*" class="inline-photo-upload" data-index="${i}"></label>`}</div>
             <div class="employee-copy">
               <h3 class="employee-name">${escapeHtml(emp.name)}</h3>
               <div class="employee-role">${escapeHtml(emp.role)}</div>
@@ -467,6 +487,22 @@ function renderPreview(){
       </div>
     `;
   }).join("");
+
+  document.querySelectorAll(".edit-crop-overlay").forEach(overlay => {
+    overlay.addEventListener("click", e => {
+      const idx = Number(e.target.dataset.index);
+      const emp = state.employees[idx];
+      if(emp.originalPhoto) {
+        currentCropTarget = idx;
+        $("cropperImage").src = emp.originalPhoto;
+        $("cropperModal").style.display = "flex";
+        if (currentCropper) currentCropper.destroy();
+        currentCropper = new Cropper($("cropperImage"), { aspectRatio: 1, viewMode: 1 });
+      } else {
+        alert("Original photo data not available for this employee. Please upload a new photo to crop.");
+      }
+    });
+  });
 
   document.querySelectorAll(".inline-photo-upload").forEach(input => {
     input.addEventListener("change", e => {
@@ -557,9 +593,50 @@ function buildEmailHtml(){
 }
 
 $("addEmployee").addEventListener("click",()=>{
-  state.employees.push({name:"Employee Name",role:"Designation",dept:"Department",doj:"",rm:"",exp:"",loc:"",photo:""});
+  state.employees.push({name:"Employee Name",role:"Designation",dept:"Department",doj:"",rm:"",exp:"",loc:"",photo:"",originalPhoto:""});
   renderEditors(); renderPreview();
 });
+
+let importedImages = {};
+
+$("imageFolderBtn").addEventListener("click", () => $("imageFolderUpload").click());
+$("imageFolderUpload").addEventListener("change", (e) => {
+  const files = e.target.files;
+  if(!files.length) return;
+  importedImages = {}; // reset
+  let processed = 0;
+  for(let i=0; i<files.length; i++){
+    const file = files[i];
+    if(!file.type.startsWith("image/")){ 
+      processed++; 
+      if(processed === files.length && Object.keys(importedImages).length > 0) alert("Loaded " + Object.keys(importedImages).length / 2 + " images! Now click '2. Import Excel'.");
+      continue; 
+    }
+    
+    // Extract base name without extension
+    const baseName = file.name.split('.').slice(0, -1).join('.');
+    
+    imageToDataUrl(file, data => {
+      importedImages[baseName] = data;
+      importedImages[file.name] = data; 
+      processed++;
+      if(processed === files.length){
+        alert("Loaded " + Object.keys(importedImages).length / 2 + " images! Now click '2. Import Excel' to map them.");
+      }
+    });
+  }
+});
+
+function parseExcelDate(val) {
+  if (!val) return "";
+  if (!isNaN(val)) {
+    const d = new Date(Math.round((val - 25569) * 86400 * 1000));
+    return d.toISOString().split('T')[0];
+  }
+  const d = new Date(val);
+  if (!isNaN(d.getTime())) return d.toISOString().split('T')[0];
+  return val;
+}
 
 $("importExcelBtn").addEventListener("click", () => $("excelUpload").click());
 $("excelUpload").addEventListener("change", async (e) => {
@@ -578,22 +655,33 @@ $("excelUpload").addEventListener("change", async (e) => {
         const getVal = (...keys) => {
           for (const key of keys) {
             const found = Object.keys(row).find(k => k.toLowerCase().trim() === key.toLowerCase().trim());
-            if (found) return row[found];
+            if (found) return String(row[found]).trim();
           }
           return "";
         };
         
         const name = getVal("name", "employee name", "emp name");
         if (name) {
+          const srNo = getVal("sr. no.", "sr no", "sr", "id", "emp id", "employee id");
+          let photoData = "";
+          if (srNo && importedImages[srNo]) {
+            photoData = importedImages[srNo];
+          } else if (srNo && importedImages[srNo + ".jpg"]) {
+            photoData = importedImages[srNo + ".jpg"];
+          } else if (srNo && importedImages[srNo + ".png"]) {
+            photoData = importedImages[srNo + ".png"];
+          }
+
           state.employees.push({
             name: name,
             role: getVal("designation", "role", "title", "job title", "position"),
             dept: getVal("department", "dept"),
-            doj: getVal("doj", "date of joining", "joining date", "join date"),
+            doj: parseExcelDate(getVal("doj", "date of joining", "joining date", "join date")),
             rm: getVal("rm", "reporting manager", "manager", "reports to"),
             exp: getVal("exp", "experience", "total experience", "work experience"),
             loc: getVal("location", "loc", "base", "city", "base location"),
-            photo: ""
+            photo: photoData,
+            originalPhoto: photoData
           });
         }
       });
